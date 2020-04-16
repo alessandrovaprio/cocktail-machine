@@ -1,0 +1,40 @@
+version: '3.6'
+
+# Postgresql Database Agent
+services:
+  agent:
+    image: postgres:9.6.9-alpine
+    environment:
+      - ENV=production
+      - TZ=Europe/Rome
+      - POSTGRES_DB=cocktail_machine
+      - POSTGRES_USER=cocktail
+      - POSTGRES_PASSWORD=IDrinkForFun!
+    ports:
+      - "5442:5432"
+    networks:
+      backend:
+        aliases:
+          - database
+    volumes:
+      - database-data:/var/lib/postgresql/data
+    deploy:
+      replicas: 1
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 60s
+      update_config:
+        order: stop-first
+
+volumes:
+  database-data:
+    name: cocktail_database-data
+  
+networks:
+  backend:
+    external: true
+    name: network-backend
